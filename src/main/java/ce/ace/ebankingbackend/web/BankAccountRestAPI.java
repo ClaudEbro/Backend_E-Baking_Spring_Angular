@@ -1,14 +1,10 @@
 package ce.ace.ebankingbackend.web;
 
-import ce.ace.ebankingbackend.dtos.AccountHistoryDTO;
-import ce.ace.ebankingbackend.dtos.AccountOperationDTO;
-import ce.ace.ebankingbackend.dtos.BankAccountDTO;
+import ce.ace.ebankingbackend.dtos.*;
+import ce.ace.ebankingbackend.exceptions.BalanceNotSufficientException;
 import ce.ace.ebankingbackend.exceptions.BankAccountNotFoundException;
 import ce.ace.ebankingbackend.services.BankAccountService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -42,4 +38,25 @@ public class BankAccountRestAPI {
             @RequestParam(name="size", defaultValue = "5") int size) throws BankAccountNotFoundException {
         return bankAccountService.getAccountHistory(accountId, page, size);
     }
+
+    @PostMapping("/accounts/debit")
+    public DebitDTO debit(@RequestBody DebitDTO debitDTO) throws BankAccountNotFoundException, BalanceNotSufficientException {
+       this.bankAccountService.debit(debitDTO.getAccountId(), debitDTO.getAmount(), debitDTO.getDescription());
+       return debitDTO;
+    }
+
+    @PostMapping("/accounts/credit")
+    public CreditDTO credit(@RequestBody CreditDTO creditDTO) throws BankAccountNotFoundException {
+        this.bankAccountService.credit(creditDTO.getAccountId(), creditDTO.getAmount(), creditDTO.getDescription());
+        return creditDTO;
+    }
+
+    @PostMapping("/accounts/transfer")
+    public void transfer(@RequestBody TransferRequestDTO transferRequestDTO) throws BankAccountNotFoundException, BalanceNotSufficientException {
+        this.bankAccountService.transfer(
+                transferRequestDTO.getAccountSource(),
+                transferRequestDTO.getAccountDestination(),
+                transferRequestDTO.getAmount());
+    }
+
 }
